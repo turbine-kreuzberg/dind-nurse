@@ -25,6 +25,7 @@ spec:
       labels:
         app: dind
     spec:
+      shareProcessNamespace: true
       containers:
         - name: nurse
           image: ghcr.io/turbine-kreuzberg/dind-nurse:latest
@@ -39,11 +40,15 @@ spec:
               port: 2375
         - name: dind
           image: docker:20.10.12-dind
+          command:
+            - sh
+            - -c
           args:
-            - dockerd
-            - --host=tcp://0.0.0.0:12375
-            - --tls=false
-            - --mtu=1300
+            - |
+              while true; do
+                dockerd-entrypoint.sh dockerd --host=tcp://0.0.0.0:12375 --tls=false --mtu=1300 &> /dev/null
+                echo restarted to avoid OOM during builds;
+              done
           env:
             - name: DOCKER_TLS_CERTDIR
               value: ""

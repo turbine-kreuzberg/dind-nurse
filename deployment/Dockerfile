@@ -4,7 +4,7 @@ FROM golang:1.17.3-alpine@sha256:55da409cc0fe11df63a7d6962fbefd1321fedc305d9969d
 WORKDIR /app
 
 # entrypoint
-RUN apk add --no-cache entr
+RUN apk add --no-cache entr docker
 COPY ./deployment/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 

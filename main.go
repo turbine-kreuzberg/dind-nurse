@@ -31,6 +31,7 @@ func run() error {
 				Flags: []cli.Flag{
 					&cli.StringFlag{Name: "addr", Value: ":2375", Usage: "Address to run service on."},
 					&cli.StringFlag{Name: "target", Value: "http://127.0.0.1:12375", Usage: "Docker daemon to forward requests to."},
+					&cli.IntFlag{Name: "dind-memory-limit", Value: 200 * 1024 * 1024, Usage: "Restart memory watermark for Docker daemon."},
 				},
 				Action: server,
 			},
@@ -53,7 +54,7 @@ func server(c *cli.Context) error {
 		return err
 	}
 
-	svc := nurse.NewService(targetURL)
+	svc := nurse.NewService(targetURL, c.Int("dind-memory-limit"))
 
 	server := httpServer(svc, c.String("addr"))
 
