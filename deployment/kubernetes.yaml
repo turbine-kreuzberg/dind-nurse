@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dind
+spec:
+  ports:
+    - name: dind
+      port: 2375
+  selector:
+    app: dind
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dind
+spec:
+  selector:
+    matchLabels:
+      app: dind
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dind
+    spec:
+      containers:
+        - name: nurse
+          image: ghcr.io/turbine-kreuzberg/dind-nurse:latest
+          args:
+            - server
+          ports:
+            - name: nurse
+              containerPort: 2375
+          readinessProbe:
+            httpGet:
+              path: /_nurse_healthy
+              port: 2375
+        - name: dind
+          image: docker:20.10.12-dind
+          args:
+            - dockerd
+            - --host=tcp://0.0.0.0:12375
+            - --tls=false
+            - --mtu=1300
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+            - name: DOCKER_BUILDKIT
+              value: "1"
+          securityContext: 
+            privileged: true
+          ports:
+            - name: dind
+              containerPort: 12375
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "8Gi"
+            requests:
+              cpu: "100m"
+              memory: "8Gi"
+          readinessProbe:
+            httpGet:
+              path: /_ping
+              port: 12375
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/docker 
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dind
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dind
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

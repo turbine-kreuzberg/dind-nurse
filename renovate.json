@@ -1,0 +1,30 @@
+{
+    "extends": [
+        "config:base"
+    ],
+    "pinDigests": true,
+    "postUpdateOptions": [
+        "gomodTidy",
+        "gomodUpdateImportPaths"
+    ],
+    "prHourlyLimit": 0,
+    "labels": [
+        "renovate-bot"
+    ],
+    "automerge": true,
+    "automergeType": "pr",
+    "kubernetes": {
+        "fileMatch": [
+            "\\.yaml$"
+        ]
+    },
+    "packageRules": [
+        {
+            "matchPackageNames": [
+                "ghcr.io/turbine-kreuzberg/dind-nurse"
+            ],
+            "enabled": false,
+            "pinDigests": false
+        }
+    ]
+}
