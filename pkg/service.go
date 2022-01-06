@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/sync/semaphore"
 )
 
 const MaxExecutionTime = 60 * time.Minute
@@ -20,10 +21,10 @@ type Service struct {
 }
 
 // NewService creates a new service server and initiates the routes.
-func NewService(targetURL *url.URL, dindMemoryLimit int) *Service {
+func NewService(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) *Service {
 	srv := &Service{}
 
-	srv.routes(targetURL, dindMemoryLimit)
+	srv.routes(targetURL, dindMemoryLimit, parallelRequestLimit)
 
 	return srv
 }
@@ -32,11 +33,11 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *Service) routes(targetURL *url.URL, dindMemoryLimit int) {
+func (s *Service) routes(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/_nurse_healthy", ping).Methods(http.MethodGet)
 
-	router.NotFoundHandler = http.HandlerFunc(NewForwarder(targetURL, dindMemoryLimit))
+	router.NotFoundHandler = http.HandlerFunc(newForwarder(targetURL, dindMemoryLimit, parallelRequestLimit))
 
 	s.router = router
 }
@@ -45,30 +46,15 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func NewForwarder(targetURL *url.URL, dindMemoryLimit int) http.HandlerFunc {
+func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) http.HandlerFunc {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	bottleneck := &sync.Mutex{}
 	openConnections := int64(0)
+	sem := semaphore.NewWeighted(int64(parallelRequestLimit))
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		/*
-			// cpu limit
-			cpuquota, err := strconv.Atoi(r.URL.Query().Get("cpuquota"))
-			if err != nil {
-				return cfg, fmt.Errorf("parse cpu quota to int: %v", err)
-			}
-			if cpuquota == 0 {
-				cpuquota = buildCPUQuota
-			}
-
-			cpuperiod, err := strconv.Atoi(r.URL.Query().Get("cpuperiod"))
-			if err != nil {
-				return cfg, fmt.Errorf("parse cpu period to int: %v", err)
-			}
-			if cpuperiod == 0 {
-				cpuperiod = buildCPUPeriod
-			}
-		*/
+		sem.Acquire(r.Context(), 1)
+		defer sem.Release(1)
 
 		bottleneck.Lock()
 		atomic.AddInt64(&openConnections, 1)
