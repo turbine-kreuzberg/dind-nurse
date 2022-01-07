@@ -2,8 +2,15 @@
 disable_snapshots()
 allow_k8s_contexts(os.getenv("TILT_ALLOW_CONTEXT"))
 
+include('./tests/Tiltfile')
+
 k8s_yaml('deployment/kubernetes.yaml')
-k8s_resource('dind', port_forwards=['2375', '12375'])
+k8s_resource(
+  'dind',
+  port_forwards=['2375', '12375'],
+  labels=["Application"],
+  pod_readiness="wait",
+)
 
 target='prod'
 live_update=[]

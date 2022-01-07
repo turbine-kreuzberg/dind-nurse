@@ -1,0 +1,18 @@
+
+k8s_yaml('build-test.yaml')
+k8s_resource(
+  'build-test',
+  resource_deps=['dind'],
+  labels=["QA"],
+  trigger_mode=TRIGGER_MODE_MANUAL,
+)
+
+docker_build(
+  ref='build-test-image',
+  context='..',
+  dockerfile='Dockerfile',
+  ignore=[ '.git'
+         , '*/*_test.go'
+         , '*.yaml'
+  ],
+)

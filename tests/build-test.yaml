@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: build-test
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: build-test
+    spec:
+      containers:
+      - name: tests
+        image: build-test-image
+        command:
+          - docker
+          - build
+          - -f
+          - deployment/Dockerfile
+          - "."
+        env:
+          - name: DOCKER_BUILDKIT
+            value: "1"
+          - name: DOCKER_HOST
+            value: "tcp://dind:2375"
+      restartPolicy: Never
