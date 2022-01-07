@@ -34,6 +34,8 @@ spec:
           ports:
             - name: nurse
               containerPort: 2375
+            - name: delve
+              containerPort: 40000
           readinessProbe:
             httpGet:
               path: /_nurse_healthy
