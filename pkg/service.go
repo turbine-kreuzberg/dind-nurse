@@ -21,10 +21,10 @@ type Service struct {
 }
 
 // NewService creates a new service server and initiates the routes.
-func NewService(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) *Service {
+func NewService(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) *Service {
 	srv := &Service{}
 
-	srv.routes(targetURL, dindMemoryLimit, parallelRequestLimit)
+	srv.routes(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, diskUsageLimit)
 
 	return srv
 }
@@ -33,11 +33,11 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *Service) routes(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) {
+func (s *Service) routes(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/_nurse_healthy", ping).Methods(http.MethodGet)
 
-	router.NotFoundHandler = http.HandlerFunc(newForwarder(targetURL, dindMemoryLimit, parallelRequestLimit))
+	router.NotFoundHandler = http.HandlerFunc(newForwarder(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, diskUsageLimit))
 
 	s.router = router
 }
@@ -46,14 +46,18 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int) http.HandlerFunc {
+func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) http.HandlerFunc {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	bottleneck := &sync.Mutex{}
 	openConnections := int64(0)
-	sem := semaphore.NewWeighted(int64(parallelRequestLimit))
+	sem := semaphore.NewWeighted(int64(parallelRequestLimit * 2)) // times 2 to work with multiple connections triggered via DOCKER_BUILDKIT=1
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		sem.Acquire(r.Context(), 1)
+		err := sem.Acquire(r.Context(), 1)
+		if err != nil {
+			log.Printf("failed to acquire semaphore slot: %v", err)
+			return
+		}
 		defer sem.Release(1)
 
 		bottleneck.Lock()
@@ -66,14 +70,19 @@ func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int)
 		bottleneck.Lock()
 		defer bottleneck.Unlock()
 		if atomic.LoadInt64(&openConnections) == 1 {
-			Cleanup(dindMemoryLimit)
+			Cleanup(dindMemoryLimit, dockerPath, diskUsageLimit)
 		}
 	}
 }
 
-func Cleanup(dindMemoryLimit int) {
+func Cleanup(dindMemoryLimit int, dockerPath string, diskUsageLimit int) {
 	err := AvoidOOM(dindMemoryLimit)
 	if err != nil {
 		log.Printf("avoid oom: %v", err)
+	}
+
+	err = CollectGargabe(dockerPath, diskUsageLimit)
+	if err != nil {
+		log.Printf("avoid full disk: %v", err)
 	}
 }

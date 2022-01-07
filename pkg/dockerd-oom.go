@@ -10,14 +10,10 @@ import (
 )
 
 func AvoidOOM(memoryLimit int) error {
-	log.Printf("run avoid oom")
-
 	pid, err := PIDofDinD()
 	if err != nil {
 		return err
 	}
-
-	log.Printf("dockerd pid %d", pid)
 
 	memory, err := MemoryOfPID(pid)
 	if err != nil {

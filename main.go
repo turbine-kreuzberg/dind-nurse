@@ -33,6 +33,8 @@ func run() error {
 					&cli.StringFlag{Name: "target", Value: "http://127.0.0.1:12375", Usage: "Docker daemon to forward requests to."},
 					&cli.IntFlag{Name: "dind-memory-limit", Value: 200 * 1024 * 1024, Usage: "Restart memory watermark for Docker daemon."},
 					&cli.IntFlag{Name: "parallel-request-limit", Value: 4, Usage: "Maximum of request to process in parallel."},
+					&cli.StringFlag{Name: "docker-path", Value: "/var/lib/docker", Usage: "Path to verify docker system prune against."},
+					&cli.IntFlag{Name: "disk-usage-limit", Value: 57, Usage: "Run docker system prune to stay below this level (in percent)."},
 				},
 				Action: server,
 			},
@@ -55,7 +57,13 @@ func server(c *cli.Context) error {
 		return err
 	}
 
-	svc := nurse.NewService(targetURL, c.Int("dind-memory-limit"), c.Int("parallel-request-limit"))
+	svc := nurse.NewService(
+		targetURL,
+		c.Int("dind-memory-limit"),
+		c.Int("parallel-request-limit"),
+		c.String("docker-path"),
+		c.Int("disk-usage-limit"),
+	)
 
 	server := httpServer(svc, c.String("addr"))
 

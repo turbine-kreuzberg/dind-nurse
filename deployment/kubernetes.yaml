@@ -38,6 +38,9 @@ spec:
             httpGet:
               path: /_nurse_healthy
               port: 2375
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/docker
         - name: dind
           image: docker:20.10.12-dind
           command:
@@ -72,7 +75,7 @@ spec:
               port: 12375
           volumeMounts:
             - name: data
-              mountPath: /var/lib/docker 
+              mountPath: /var/lib/docker
       volumes:
         - name: data
           persistentVolumeClaim:
