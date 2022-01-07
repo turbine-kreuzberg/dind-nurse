@@ -62,13 +62,6 @@ spec:
           ports:
             - name: dind
               containerPort: 12375
-          resources:
-            limits:
-              cpu: "1000m"
-              memory: "8Gi"
-            requests:
-              cpu: "100m"
-              memory: "8Gi"
           readinessProbe:
             httpGet:
               path: /_ping
