@@ -4,8 +4,9 @@ FROM golang:1.17.3-alpine@sha256:55da409cc0fe11df63a7d6962fbefd1321fedc305d9969d
 WORKDIR /app
 
 # entrypoint
-RUN apk add --no-cache entr docker
+RUN apk add --no-cache entr docker build-base
 COPY ./deployment/entrypoint.sh /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 # dependencies
@@ -16,7 +17,11 @@ RUN go mod download
 # server
 COPY main.go .
 COPY pkg ./pkg
-RUN go install .
+
+RUN if [[ "$DEBUG" = "true" ]] ; then go install -gcflags "all=-N -l" . ; else go install . ; fi
+
+#remote debuging
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
 
 # production image ############################################
 FROM alpine:3.15.0@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 AS prod
