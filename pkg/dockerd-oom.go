@@ -41,7 +41,7 @@ func PIDofDinD() (int, error) {
 	cmd := exec.Command(
 		"sh",
 		"-c",
-		fmt.Sprintf("pgrep dockerd"),
+		"pgrep dockerd",
 	)
 	cmd.Stderr = os.Stderr
 

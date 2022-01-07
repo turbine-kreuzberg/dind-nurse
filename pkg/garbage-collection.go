@@ -20,7 +20,10 @@ func CollectGargabe(dockerPath string, usageLimit int) error {
 	log.Printf("usage of %s is %d%%", dockerPath, inUse)
 
 	if inUse >= usageLimit {
-		dockerSystemVolumes()
+		err := dockerSystemVolumes()
+		if err != nil {
+			return err
+		}
 	}
 
 	for {
@@ -37,7 +40,11 @@ func CollectGargabe(dockerPath string, usageLimit int) error {
 			return fmt.Errorf("failed to reduce disk usage")
 		}
 
-		dockerSystemPrune(keepDays)
+		err = dockerSystemPrune(keepDays)
+		if err != nil {
+			return err
+		}
+
 		keepDays--
 	}
 }
@@ -91,7 +98,7 @@ func dockerSystemVolumes() error {
 	cmd := exec.Command(
 		"sh",
 		"-c",
-		fmt.Sprintf("docker system prune -f --volumes"),
+		"docker system prune -f --volumes",
 	)
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
