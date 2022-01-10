@@ -31,7 +31,7 @@ func run() error {
 				Flags: []cli.Flag{
 					&cli.StringFlag{Name: "addr", Value: ":2375", Usage: "Address to run service on."},
 					&cli.StringFlag{Name: "target", Value: "http://127.0.0.1:12375", Usage: "Docker daemon to forward requests to."},
-					&cli.IntFlag{Name: "dind-memory-limit", Value: 75 * 1024 * 1024, Usage: "Restart memory watermark for Docker daemon."},
+					&cli.IntFlag{Name: "dind-memory-limit", Value: 300 * 1024 * 1024, Usage: "Restart memory watermark for Docker daemon."},
 					&cli.IntFlag{Name: "parallel-request-limit", Value: 8, Usage: "Maximum of request to process in parallel."},
 					&cli.StringFlag{Name: "docker-path", Value: "/var/lib/docker", Usage: "Path to verify docker system prune against."},
 					&cli.IntFlag{Name: "disk-usage-limit", Value: 90, Usage: "Run docker system prune to stay below this level (in percent)."},
