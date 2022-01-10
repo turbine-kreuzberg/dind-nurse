@@ -50,7 +50,7 @@ func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int,
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	bottleneck := &sync.Mutex{}
 	openConnections := int64(0)
-	sem := semaphore.NewWeighted(int64(parallelRequestLimit * 2)) // times 2 to work with multiple connections triggered via DOCKER_BUILDKIT=1
+	sem := semaphore.NewWeighted(int64(parallelRequestLimit))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := sem.Acquire(r.Context(), 1)
