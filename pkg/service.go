@@ -1,6 +1,7 @@
 package nurse
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -70,18 +71,20 @@ func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int,
 		bottleneck.Lock()
 		defer bottleneck.Unlock()
 		if atomic.LoadInt64(&openConnections) == 1 {
-			Cleanup(dindMemoryLimit, dockerPath, diskUsageLimit)
+			ctx, cancel := context.WithTimeout(r.Context(), time.Minute)
+			defer cancel()
+			Cleanup(ctx, dindMemoryLimit, dockerPath, diskUsageLimit)
 		}
 	}
 }
 
-func Cleanup(dindMemoryLimit int, dockerPath string, diskUsageLimit int) {
-	err := AvoidOOM(dindMemoryLimit)
+func Cleanup(ctx context.Context, dindMemoryLimit int, dockerPath string, diskUsageLimit int) {
+	err := AvoidOOM(ctx, dindMemoryLimit)
 	if err != nil {
 		log.Printf("avoid oom: %v", err)
 	}
 
-	err = CollectGargabe(dockerPath, diskUsageLimit)
+	err = CollectGargabe(ctx, dockerPath, diskUsageLimit)
 	if err != nil {
 		log.Printf("avoid full disk: %v", err)
 	}

@@ -1,6 +1,7 @@
 package nurse
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,13 +10,13 @@ import (
 	"strings"
 )
 
-func AvoidOOM(memoryLimit int) error {
-	pid, err := PIDofDinD()
+func AvoidOOM(ctx context.Context, memoryLimit int) error {
+	pid, err := PIDofDinD(ctx)
 	if err != nil {
 		return err
 	}
 
-	memory, err := MemoryOfPID(pid)
+	memory, err := MemoryOfPID(ctx, pid)
 	if err != nil {
 		return err
 	}
@@ -23,12 +24,12 @@ func AvoidOOM(memoryLimit int) error {
 	log.Printf("dockerd memory usage %d Byte", memory)
 
 	if memory > memoryLimit {
-		err = RestartDockerd()
+		err = RestartDockerd(ctx)
 		if err != nil {
 			return err
 		}
 
-		err = AwaitDocker()
+		err = AwaitDocker(ctx)
 		if err != nil {
 			return err
 		}
@@ -37,8 +38,9 @@ func AvoidOOM(memoryLimit int) error {
 	return nil
 }
 
-func PIDofDinD() (int, error) {
-	cmd := exec.Command(
+func PIDofDinD(ctx context.Context) (int, error) {
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		"pgrep dockerd",
@@ -58,8 +60,9 @@ func PIDofDinD() (int, error) {
 	return pid, nil
 }
 
-func MemoryOfPID(pid int) (int, error) {
-	cmd := exec.Command(
+func MemoryOfPID(ctx context.Context, pid int) (int, error) {
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		fmt.Sprintf("grep ^VmRSS /proc/%d/status | awk '{print $2}'", pid),
@@ -81,10 +84,11 @@ func MemoryOfPID(pid int) (int, error) {
 	return memory, nil
 }
 
-func RestartDockerd() error {
+func RestartDockerd(ctx context.Context) error {
 	log.Printf("running killall dockerd")
 
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		ctx,
 		"killall",
 		"dockerd",
 	)
@@ -99,8 +103,9 @@ func RestartDockerd() error {
 	return nil
 }
 
-func AwaitDocker() error {
-	cmd := exec.Command(
+func AwaitDocker(ctx context.Context) error {
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		"until docker version; do sleep 1; done",

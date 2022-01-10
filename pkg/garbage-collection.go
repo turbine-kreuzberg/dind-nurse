@@ -1,6 +1,7 @@
 package nurse
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,10 +10,10 @@ import (
 	"strings"
 )
 
-func CollectGargabe(dockerPath string, usageLimit int) error {
+func CollectGargabe(ctx context.Context, dockerPath string, usageLimit int) error {
 	keepDays := 28
 
-	inUse, err := diskUsage(dockerPath)
+	inUse, err := diskUsage(ctx, dockerPath)
 	if err != nil {
 		return err
 	}
@@ -20,14 +21,14 @@ func CollectGargabe(dockerPath string, usageLimit int) error {
 	log.Printf("usage of %s is %d%%", dockerPath, inUse)
 
 	if inUse >= usageLimit {
-		err := dockerSystemVolumes()
+		err := dockerSystemVolumes(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
 	for {
-		inUse, err := diskUsage(dockerPath)
+		inUse, err := diskUsage(ctx, dockerPath)
 		if err != nil {
 			return err
 		}
@@ -40,7 +41,7 @@ func CollectGargabe(dockerPath string, usageLimit int) error {
 			return fmt.Errorf("failed to reduce disk usage")
 		}
 
-		err = dockerSystemPrune(keepDays)
+		err = dockerSystemPrune(ctx, keepDays)
 		if err != nil {
 			return err
 		}
@@ -50,8 +51,9 @@ func CollectGargabe(dockerPath string, usageLimit int) error {
 }
 
 // diskUsage returns the diskUsage in percent
-func diskUsage(path string) (int, error) {
-	cmd := exec.Command(
+func diskUsage(ctx context.Context, path string) (int, error) {
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		fmt.Sprintf("df %s | tail -n-1 | awk '{print $5+0}'", path),
@@ -72,10 +74,11 @@ func diskUsage(path string) (int, error) {
 	return percent, nil
 }
 
-func dockerSystemPrune(keepDays int) error {
+func dockerSystemPrune(ctx context.Context, keepDays int) error {
 	log.Printf("docker system prune -a -f --filter until=%dh", keepDays*24)
 
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		fmt.Sprintf("docker system prune -a -f --filter until=%dh", keepDays*24),
@@ -92,10 +95,11 @@ func dockerSystemPrune(keepDays int) error {
 	return nil
 }
 
-func dockerSystemVolumes() error {
+func dockerSystemVolumes(ctx context.Context) error {
 	log.Printf("docker system prune -f --volumes")
 
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		ctx,
 		"sh",
 		"-c",
 		"docker system prune -f --volumes",
