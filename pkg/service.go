@@ -22,10 +22,10 @@ type Service struct {
 }
 
 // NewService creates a new service server and initiates the routes.
-func NewService(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) *Service {
+func NewService(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, upperDiskUsageLimit, lowerDiskUsageLimit int) *Service {
 	srv := &Service{}
 
-	srv.routes(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, diskUsageLimit)
+	srv.routes(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, upperDiskUsageLimit, lowerDiskUsageLimit)
 
 	return srv
 }
@@ -34,11 +34,11 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *Service) routes(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) {
+func (s *Service) routes(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, upperDiskUsageLimit, lowerDiskUsageLimit int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/_nurse_healthy", ping).Methods(http.MethodGet)
 
-	router.NotFoundHandler = http.HandlerFunc(newForwarder(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, diskUsageLimit))
+	router.NotFoundHandler = http.HandlerFunc(newForwarder(targetURL, dindMemoryLimit, parallelRequestLimit, dockerPath, upperDiskUsageLimit, lowerDiskUsageLimit))
 
 	s.router = router
 }
@@ -47,7 +47,7 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, diskUsageLimit int) http.HandlerFunc {
+func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int, dockerPath string, upperDiskUsageLimit, lowerDiskUsageLimit int) http.HandlerFunc {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	bottleneck := &sync.Mutex{}
 	openConnections := int64(0)
@@ -73,18 +73,18 @@ func newForwarder(targetURL *url.URL, dindMemoryLimit, parallelRequestLimit int,
 		if atomic.LoadInt64(&openConnections) == 1 {
 			ctx, cancel := context.WithTimeout(r.Context(), time.Minute)
 			defer cancel()
-			Cleanup(ctx, dindMemoryLimit, dockerPath, diskUsageLimit)
+			Cleanup(ctx, dindMemoryLimit, dockerPath, upperDiskUsageLimit, lowerDiskUsageLimit)
 		}
 	}
 }
 
-func Cleanup(ctx context.Context, dindMemoryLimit int, dockerPath string, diskUsageLimit int) {
+func Cleanup(ctx context.Context, dindMemoryLimit int, dockerPath string, upperDiskUsageLimit, lowerDiskUsageLimit int) {
 	err := AvoidOOM(ctx, dindMemoryLimit)
 	if err != nil {
 		log.Printf("avoid oom: %v", err)
 	}
 
-	err = CollectGargabe(ctx, dockerPath, diskUsageLimit)
+	err = CollectGargabe(ctx, dockerPath, upperDiskUsageLimit, lowerDiskUsageLimit)
 	if err != nil {
 		log.Printf("avoid full disk: %v", err)
 	}

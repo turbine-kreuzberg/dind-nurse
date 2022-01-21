@@ -34,7 +34,8 @@ func run() error {
 					&cli.IntFlag{Name: "dind-memory-limit", Value: 300 * 1024 * 1024, Usage: "Restart memory watermark for Docker daemon."},
 					&cli.IntFlag{Name: "parallel-request-limit", Value: 8, Usage: "Maximum of request to process in parallel."},
 					&cli.StringFlag{Name: "docker-path", Value: "/var/lib/docker", Usage: "Path to verify docker system prune against."},
-					&cli.IntFlag{Name: "disk-usage-limit", Value: 90, Usage: "Run docker system prune to stay below this level (in percent)."},
+					&cli.IntFlag{Name: "upper-disk-usage-limit", Value: 90, Usage: "Run garbage collection once this level is reached (in percent)."},
+					&cli.IntFlag{Name: "lower-disk-usage-limit", Value: 50, Usage: "Once garbage collection is actived, push usage below this level (in percent)."},
 				},
 				Action: server,
 			},
@@ -62,7 +63,8 @@ func server(c *cli.Context) error {
 		c.Int("dind-memory-limit"),
 		c.Int("parallel-request-limit"),
 		c.String("docker-path"),
-		c.Int("disk-usage-limit"),
+		c.Int("upper-disk-usage-limit"),
+		c.Int("lower-disk-usage-limit"),
 	)
 
 	server := httpServer(svc, c.String("addr"))

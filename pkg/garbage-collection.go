@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func CollectGargabe(ctx context.Context, dockerPath string, usageLimit int) error {
+func CollectGargabe(ctx context.Context, dockerPath string, upperDiskUsageLimit, lowerDiskUsageLimit int) error {
 	keepDays := 28
 
 	inUse, err := diskUsage(ctx, dockerPath)
@@ -20,23 +20,16 @@ func CollectGargabe(ctx context.Context, dockerPath string, usageLimit int) erro
 
 	log.Printf("usage of %s is %d%%", dockerPath, inUse)
 
-	if inUse >= usageLimit {
-		err := dockerSystemVolumes(ctx)
-		if err != nil {
-			return err
-		}
+	if inUse < upperDiskUsageLimit {
+		return nil
+	}
+
+	err = dockerSystemVolumes(ctx)
+	if err != nil {
+		return err
 	}
 
 	for {
-		inUse, err := diskUsage(ctx, dockerPath)
-		if err != nil {
-			return err
-		}
-
-		if inUse < usageLimit {
-			return nil
-		}
-
 		if keepDays < 0 {
 			return fmt.Errorf("failed to reduce disk usage")
 		}
@@ -52,6 +45,15 @@ func CollectGargabe(ctx context.Context, dockerPath string, usageLimit int) erro
 		}
 
 		keepDays--
+
+		inUse, err := diskUsage(ctx, dockerPath)
+		if err != nil {
+			return err
+		}
+
+		if inUse < lowerDiskUsageLimit {
+			return nil
+		}
 	}
 }
 
