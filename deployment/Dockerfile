@@ -1,7 +1,21 @@
+# dependencies download
+FROM docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61 AS dependencies
+RUN apk add curl
+ENV BUILDX_VERSION=v0.7.1
+RUN curl --fail -L -o /docker-buildx \
+    https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64
+RUN chmod a+x /docker-buildx
+
 # build environment ###########################################
 FROM golang:1.17.6-alpine@sha256:519c827ec22e5cf7417c9ff063ec840a446cdd30681700a16cf42eb43823e27c AS build-env
-
 WORKDIR /app
+
+RUN apk add --no-cache ca-certificates docker
+
+# buildx
+COPY --from=dependencies /docker-buildx /root/.docker/cli-plugins/docker-buildx
+RUN docker buildx create --name ci-builder
+RUN docker buildx use --default --builder ci-builder
 
 # entrypoint
 RUN apk add --no-cache ca-certificates docker entr build-base
@@ -27,7 +41,13 @@ RUN go install -gcflags "all=-N -l" .
 
 # production image ############################################
 FROM alpine:3.15.0@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 AS prod
+
 RUN apk add --no-cache ca-certificates docker
+
+# buildx
+COPY --from=dependencies /docker-buildx /root/.docker/cli-plugins/docker-buildx
+RUN docker buildx create --name ci-builder
+RUN docker buildx use --default --builder ci-builder
 
 # executable
 COPY --from=build-env /go/bin/dind-nurse /bin/dind-nurse

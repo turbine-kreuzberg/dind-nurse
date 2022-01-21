@@ -46,6 +46,11 @@ func CollectGargabe(ctx context.Context, dockerPath string, usageLimit int) erro
 			return err
 		}
 
+		err = dockerBuildxPrune(ctx, keepDays)
+		if err != nil {
+			return err
+		}
+
 		keepDays--
 	}
 }
@@ -74,30 +79,7 @@ func diskUsage(ctx context.Context, path string) (int, error) {
 	return percent, nil
 }
 
-func dockerSystemPrune(ctx context.Context, keepDays int) error {
-	log.Printf("docker system prune -a -f --filter until=%dh", keepDays*24)
-
-	cmd := exec.CommandContext(
-		ctx,
-		"sh",
-		"-c",
-		fmt.Sprintf("docker system prune -a -f --filter until=%dh", keepDays*24),
-	)
-	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "DOCKER_HOST=tcp://127.0.0.1:12375")
-
-	output, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("docker system prune: %v: %s", err, string(output))
-	}
-
-	return nil
-}
-
 func dockerSystemVolumes(ctx context.Context) error {
-	log.Printf("docker system prune -f --volumes")
-
 	cmd := exec.CommandContext(
 		ctx,
 		"sh",
@@ -108,9 +90,53 @@ func dockerSystemVolumes(ctx context.Context) error {
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "DOCKER_HOST=tcp://127.0.0.1:12375")
 
+	log.Println(cmd.String())
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("prune docker volumes: %v: %s", err, string(output))
+	}
+
+	return nil
+}
+
+func dockerSystemPrune(ctx context.Context, keepDays int) error {
+	cmd := exec.CommandContext(
+		ctx,
+		"sh",
+		"-c",
+		fmt.Sprintf("docker system prune --all --force --filter until=%dh", keepDays*24),
+	)
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "DOCKER_HOST=tcp://127.0.0.1:12375")
+
+	log.Println(cmd.String())
+
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("docker system prune: %v: %s", err, string(output))
+	}
+
+	return nil
+}
+
+func dockerBuildxPrune(ctx context.Context, keepDays int) error {
+	cmd := exec.CommandContext(
+		ctx,
+		"sh",
+		"-c",
+		fmt.Sprintf("docker buildx prune --all --force --filter until=%dh", keepDays*24),
+	)
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "DOCKER_HOST=tcp://127.0.0.1:12375")
+
+	log.Println(cmd.String())
+
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("docker system prune: %v: %s", err, string(output))
 	}
 
 	return nil

@@ -18,6 +18,7 @@
             "\\.yaml$"
         ]
     },
+    "ignorePaths": [],
     "packageRules": [
         {
             "matchPackageNames": [
@@ -57,6 +58,16 @@
             ],
             "depNameTemplate": "tilt-dev/tilt",
             "datasourceTemplate": "github-tags"
-        }
+        },
+        {
+            "fileMatch": [
+                "^deployment/Dockerfile$"
+            ],
+            "matchStrings": [
+                "ENV BUILDX_VERSION=(?<currentValue>.*?)\n"
+            ],
+            "depNameTemplate": "docker/buildx",
+            "datasourceTemplate": "github-tags"
+      }
     ]
 }

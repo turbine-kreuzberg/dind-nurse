@@ -7,6 +7,14 @@ k8s_resource(
   trigger_mode=TRIGGER_MODE_MANUAL,
 )
 
+k8s_yaml('buildx-test.yaml')
+k8s_resource(
+  'buildx-test',
+  resource_deps=['dind'],
+  labels=["QA"],
+  trigger_mode=TRIGGER_MODE_MANUAL,
+)
+
 docker_build(
   ref='build-test-image',
   context='..',

@@ -1,4 +1,4 @@
-FROM docker:20.10.12
+FROM ghcr.io/utopia-planitia/docker-buildx-cli:latest
 
 WORKDIR /workdir
 COPY . /workdir
