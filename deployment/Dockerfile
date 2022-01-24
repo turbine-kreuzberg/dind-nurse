@@ -14,8 +14,6 @@ RUN apk add --no-cache ca-certificates docker
 
 # buildx
 COPY --from=dependencies /docker-buildx /root/.docker/cli-plugins/docker-buildx
-RUN docker buildx create --name ci-builder
-RUN docker buildx use --default --builder ci-builder
 
 # entrypoint
 RUN apk add --no-cache ca-certificates docker entr build-base
@@ -46,8 +44,6 @@ RUN apk add --no-cache ca-certificates docker
 
 # buildx
 COPY --from=dependencies /docker-buildx /root/.docker/cli-plugins/docker-buildx
-RUN docker buildx create --name ci-builder
-RUN docker buildx use --default --builder ci-builder
 
 # executable
 COPY --from=build-env /go/bin/dind-nurse /bin/dind-nurse
