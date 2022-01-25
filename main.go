@@ -36,6 +36,7 @@ func run() error {
 					&cli.StringFlag{Name: "docker-path", Value: "/var/lib/docker", Usage: "Path to verify docker system prune against."},
 					&cli.IntFlag{Name: "upper-disk-usage-limit", Value: 90, Usage: "Run garbage collection once this level is reached (in percent)."},
 					&cli.IntFlag{Name: "lower-disk-usage-limit", Value: 50, Usage: "Once garbage collection is actived, push usage below this level (in percent)."},
+					&cli.StringFlag{Name: "buildkitd-toml", Usage: "Path of buildkitd.toml to use."},
 				},
 				Action: server,
 			},
@@ -51,7 +52,9 @@ func run() error {
 }
 
 func server(c *cli.Context) error {
-	err := nurse.Setup(c.Context)
+	buildkitdToml := c.String("buildkitd-toml")
+
+	err := nurse.Setup(c.Context, buildkitdToml)
 	if err != nil {
 		return err
 	}

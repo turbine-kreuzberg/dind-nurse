@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func Setup(ctx context.Context) error {
-	err := setupBuildxBuilder(ctx)
+func Setup(ctx context.Context, buildkitdToml string) error {
+	err := setupBuildxBuilder(ctx, buildkitdToml)
 	if err != nil {
 		return err
 	}
@@ -27,14 +27,18 @@ func Setup(ctx context.Context) error {
 	return nil
 }
 
-func setupBuildxBuilder(ctx context.Context) error {
+func setupBuildxBuilder(ctx context.Context, buildkitdToml string) error {
 	log.Println("set up buildx builder")
+
+	if buildkitdToml != "" {
+		buildkitdToml = fmt.Sprintf("--config=%s", buildkitdToml)
+	}
 
 	cmd := exec.CommandContext(
 		ctx,
 		"sh",
 		"-c",
-		"docker buildx create --use --bootstrap --name ci-builder",
+		fmt.Sprintf("docker buildx create --use --bootstrap %s --name ci-builder", buildkitdToml),
 	)
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
