@@ -6,10 +6,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func Setup(ctx context.Context) error {
 	err := setupBuildxBuilder(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = awaitDocker(ctx)
 	if err != nil {
 		return err
 	}
@@ -39,6 +45,30 @@ func setupBuildxBuilder(ctx context.Context) error {
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("create buildx builder: %v: %s", err, string(output))
+	}
+
+	return nil
+}
+
+func awaitDocker(ctx context.Context) error {
+	log.Println("wait for docker startup")
+
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+
+	cmd := exec.CommandContext(
+		ctx,
+		"sh",
+		"-c",
+		"until docker version; do sleep 1; done",
+	)
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "DOCKER_HOST=tcp://127.0.0.1:12375")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("await docker: %v: %s", err, string(output))
 	}
 
 	return nil
