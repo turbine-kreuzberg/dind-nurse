@@ -51,8 +51,6 @@ func run() error {
 }
 
 func server(c *cli.Context) error {
-	log.Println("set up buildx builder")
-
 	err := nurse.Setup(c.Context)
 	if err != nil {
 		return err
