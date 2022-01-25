@@ -13,12 +13,11 @@ spec:
       - name: tests
         image: build-test-image
         command:
-          - docker
-          - buildx
-          - build
-          - -f
-          - deployment/Dockerfile
-          - "."
+          - sh
+          - -c
+          - |
+            docker buildx create --use --name ci-builder
+            docker buildx build -f deployment/Dockerfile .
         env:
           - name: DOCKER_BUILDKIT
             value: "1"
