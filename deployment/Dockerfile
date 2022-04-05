@@ -1,7 +1,7 @@
 # dependencies download
 FROM docker:20.10.14@sha256:7dad83861f0b28bd6a0b281dc5f72144927b9f8173e388e461c8feba6be20bec AS dependencies
 RUN apk add curl
-ENV BUILDX_VERSION=v0.8.1
+ENV BUILDX_VERSION=v0.8.2
 RUN curl --fail -L -o /docker-buildx \
     https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64
 RUN chmod a+x /docker-buildx
