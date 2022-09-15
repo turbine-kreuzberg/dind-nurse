@@ -1,5 +1,5 @@
 # dependencies download
-FROM docker:20.10.18@sha256:c0ba96f6414f1bf92cc6c5afc25235f507b7fcc1ca0a8ba6884c81aacf434b78 AS dependencies
+FROM docker:20.10.18@sha256:68a377d2bd432a2e5791144748e8179db55118cb7a9e77b06bbfdc2c1c46b235 AS dependencies
 RUN apk add curl
 ENV BUILDX_VERSION=v0.8.2
 RUN curl --fail -L -o /docker-buildx \
