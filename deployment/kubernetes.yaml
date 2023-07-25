@@ -44,7 +44,7 @@ spec:
             - name: data
               mountPath: /var/lib/docker
         - name: dind
-          image: docker:24.0.4-dind@sha256:ec0c2cf754e65f0a97af7e9fa17294eac0240df9082c5a234da81503858427e2
+          image: docker:24.0.5-dind@sha256:b1f43c30e065966611cf5e38012fda2145bc08b01082fa102296957d77c2cb4c
           command:
             - sh
             - -c
