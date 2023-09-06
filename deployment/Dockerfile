@@ -7,7 +7,7 @@ RUN curl --fail -L -o /docker-buildx \
 RUN chmod a+x /docker-buildx
 
 # build environment ###########################################
-FROM golang:1.21.0-alpine@sha256:445f34008a77b0b98bf1821bf7ef5e37bb63cc42d22ee7c21cc17041070d134f AS build-env
+FROM golang:1.21.1-alpine@sha256:96634e55b363cb93d39f78fb18aa64abc7f96d372c176660d7b8b6118939d97b AS build-env
 WORKDIR /app
 
 RUN apk add --no-cache ca-certificates docker
