@@ -3,7 +3,7 @@ module github.com/turbine-kreuzberg/dind-nurse
 go 1.19
 
 require (
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/urfave/cli/v2 v2.24.4
 	golang.org/x/sync v0.5.0
 )
