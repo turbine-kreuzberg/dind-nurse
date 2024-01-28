@@ -1,4 +1,4 @@
-FROM ghcr.io/utopia-planitia/docker-buildx-cli:latest@sha256:a07fe8b784728c3edb8968ffa6a716853b51cb458d28276d7436cac4ae2af19e
+FROM ghcr.io/utopia-planitia/docker-buildx-cli:latest@sha256:8ef80c324145a0d14e51ad8480c50a285e96be9d95a09a95e2155be4f20290a2
 
 WORKDIR /workdir
 COPY . /workdir
