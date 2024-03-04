@@ -34,7 +34,7 @@
                 "^.github/workflows/check.yml$"
             ],
             "matchStrings": [
-                "version: (?<currentValue>.*?)\n"
+                "^\\s+version: ['\"]?(?<currentValue>[^\\s'\"]+?)['\"]?\n"
             ],
             "depNameTemplate": "golangci/golangci-lint",
             "datasourceTemplate": "github-tags"
@@ -44,7 +44,7 @@
                 "^.github/workflows/check.yml$"
             ],
             "matchStrings": [
-                "go-version: '(?<currentValue>.*?)'\n"
+                "^\\s+go-version: ['\"]?(?<currentValue>[^\\s'\"]+?)['\"]?\n"
             ],
             "depNameTemplate": "golang/go",
             "datasourceTemplate": "github-tags"
