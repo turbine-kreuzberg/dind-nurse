@@ -1,10 +1,9 @@
 # dependencies download
 FROM docker:25.0.3@sha256:0d70c541ee98e66b8f7ece8c0e9f7910732466e337a9087c2ac2868ef0775092 AS dependencies
-RUN apk add curl
 ENV BUILDX_VERSION=v0.8.2
-RUN curl --fail -L -o /docker-buildx \
-    https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64
-RUN chmod a+x /docker-buildx
+RUN set -eux; \
+    wget -q -O /docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION:?}/buildx-${BUILDX_VERSION:?}.linux-amd64"; \
+    chmod a+x /docker-buildx
 
 # build environment ###########################################
 FROM golang:1.22.0-alpine@sha256:8e96e6cff6a388c2f70f5f662b64120941fcd7d4b89d62fec87520323a316bd9 AS build-env
