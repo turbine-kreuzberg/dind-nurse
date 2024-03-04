@@ -10,12 +10,12 @@ import (
 )
 
 func Setup(ctx context.Context, buildkitdToml string) error {
-	err := setupBuildxBuilder(ctx, buildkitdToml)
+	err := awaitDocker(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = awaitDocker(ctx)
+	err = setupBuildxBuilder(ctx, buildkitdToml)
 	if err != nil {
 		return err
 	}
