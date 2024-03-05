@@ -47,7 +47,7 @@ jobs:
           tilt: 'v0.33.11'
       - name: Verify tilt ci
         run: |
-          timeout 1200 tilt ci
+          timeout 360 tilt ci
   tilt-ci-prod:
     name: Verify tilt ci (production images)
     runs-on: ubuntu-latest
@@ -64,4 +64,4 @@ jobs:
           tilt: 'v0.33.11'
       - name: Verify tilt ci
         run: |
-          PROD=1 timeout 1200 tilt ci
+          PROD=1 timeout 360 tilt ci
