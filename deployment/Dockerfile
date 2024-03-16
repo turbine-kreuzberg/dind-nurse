@@ -6,7 +6,7 @@ RUN set -eux; \
     chmod a+x /docker-buildx
 
 # build environment ###########################################
-FROM golang:1.22.1-alpine@sha256:6f179eca0d49ec57ed6d64067d3d2c8c77fb4ca134b687f31cf1666e467cd1a9 AS build-env
+FROM golang:1.22.1-alpine@sha256:0466223b8544fb7d4ff04748acc4d75a608234bf4e79563bff208d2060c0dd79 AS build-env
 WORKDIR /app
 
 RUN apk add --no-cache ca-certificates docker
