@@ -1,5 +1,5 @@
 # dependencies download
-FROM docker:25.0.4@sha256:19a2619f1285f127e20923578299cf42407c347872409fff6f8b90b386d5130f AS dependencies
+FROM docker:25.0.4@sha256:92efb5a4c0e6e390e0418a26257787f10087aeffd8ebe13480c67e85a6f587aa AS dependencies
 ENV BUILDX_VERSION=v0.13.1
 RUN set -eux; \
     wget -q -O /docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION:?}/buildx-${BUILDX_VERSION:?}.linux-amd64"; \
