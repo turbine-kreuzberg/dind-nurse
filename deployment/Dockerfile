@@ -1,6 +1,6 @@
 # dependencies download
 FROM docker:27.2.1@sha256:7e8d1849af7a99f145223810933c6cff756f74572f132b7a542936f4cfd7b733 AS dependencies
-ENV BUILDX_VERSION=v0.17.0
+ENV BUILDX_VERSION=v0.17.1
 RUN set -eux; \
     wget -q -O /docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION:?}/buildx-${BUILDX_VERSION:?}.linux-amd64"; \
     chmod a+x /docker-buildx
