@@ -44,7 +44,7 @@ jobs:
         with:
           setup-tools: |
             tilt
-          tilt: 'v0.34.3'
+          tilt: 'v0.34.4'
       - name: Verify tilt ci
         run: |
           timeout 360 tilt ci
@@ -61,7 +61,7 @@ jobs:
         with:
           setup-tools: |
             tilt
-          tilt: 'v0.34.3'
+          tilt: 'v0.34.4'
       - name: Verify tilt ci
         run: |
           PROD=1 timeout 360 tilt ci
