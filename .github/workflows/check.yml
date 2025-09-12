@@ -40,7 +40,7 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
       - name: Install tilt cli
-        uses: yokawasa/action-setup-kube-tools@9e25a4277af127b60011c95b6ed2da7e3b3613b1 # v0.11.2
+        uses: yokawasa/action-setup-kube-tools@ebd6f098e4d66281876e21f576a024a3b97ed968 # v0.13.0
         with:
           setup-tools: |
             tilt
@@ -57,7 +57,7 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
       - name: Install tilt cli
-        uses: yokawasa/action-setup-kube-tools@9e25a4277af127b60011c95b6ed2da7e3b3613b1 # v0.11.2
+        uses: yokawasa/action-setup-kube-tools@ebd6f098e4d66281876e21f576a024a3b97ed968 # v0.13.0
         with:
           setup-tools: |
             tilt
