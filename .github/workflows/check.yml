@@ -16,7 +16,7 @@ jobs:
       - name: Lint go code with golangci-lint
         uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
         with:
-          version: v1.64.8
+          version: v2.11.2
   go-test:
     name: Verify go tests
     runs-on: ubuntu-latest
