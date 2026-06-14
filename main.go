@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	nurse "github.com/turbine-kreuzberg/dind-nurse/pkg"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
