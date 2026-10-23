@@ -37,7 +37,7 @@ COPY ./deployment/entrypoint-delve.sh /entrypoint.sh
 RUN go install -gcflags "all=-N -l" .
 
 # production image ############################################
-FROM alpine:3.24.3@sha256:b3413572228e34bd1c9245f5565e6cd127005655e8a7899aef33d8e83255c9e6 AS prod
+FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS prod
 
 RUN apk add --no-cache ca-certificates docker
 
