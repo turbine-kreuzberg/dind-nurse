@@ -1,6 +1,6 @@
 # dependencies download
 FROM docker:29.10.0@sha256:4bbc7223f81db790097c6dea42fb93e05b8fead4f0431fbe6ccaba6e8473201c AS dependencies
-ENV BUILDX_VERSION=v0.39.0
+ENV BUILDX_VERSION=v0.39.1
 RUN set -eux; \
     wget -q -O /docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION:?}/buildx-${BUILDX_VERSION:?}.linux-amd64"; \
     chmod a+x /docker-buildx
